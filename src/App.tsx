@@ -489,9 +489,12 @@ export const App: React.FC = () => {
       {showShareModal && (
         <ShareVoteModal
           lastVote={lastVote}
+          candidates={candidates}
+          voteResult={wsVoteResult}
           onClose={() => setShowShareModal(false)}
         />
       )}
+
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-4 mt-12 bg-slate-950/50 text-slate-400 text-xs text-center">
