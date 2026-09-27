@@ -177,11 +177,11 @@ export const App: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
         
-        {/* Candidate Quick Ribbon */}
+        {/* Candidate Quick Ribbon (Visible on Tablet/Desktop, Hidden on Mobile) */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 flex items-center justify-between gap-4 overflow-x-auto shadow-lg backdrop-blur-md"
+          className="hidden sm:flex bg-slate-900/70 border border-slate-800 rounded-2xl p-3 items-center justify-between gap-4 overflow-x-auto shadow-lg backdrop-blur-md"
         >
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
