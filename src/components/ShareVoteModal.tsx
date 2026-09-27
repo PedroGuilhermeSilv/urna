@@ -87,7 +87,7 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
       ctx.fillText('🗳️ PESQUISA ELEITORAL 2026 (NÃO OFICIAL)', 30, 48);
 
       if (candidateMatch) {
-        // Draw candidate photo
+        // Draw candidate photo without stretching (aspect-fit / cover top)
         const candImg = new Image();
         candImg.crossOrigin = 'anonymous';
         await new Promise((res) => {
@@ -100,11 +100,28 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
           ctx.beginPath();
           ctx.roundRect(30, 75, 110, 140, 12);
           ctx.clip();
-          ctx.drawImage(candImg, 30, 75, 110, 140);
+
+          // Calculate aspect ratio crop (cover mode focused on top/face)
+          const targetW = 110;
+          const targetH = 140;
+          const imgRatio = candImg.naturalWidth / candImg.naturalHeight;
+          const targetRatio = targetW / targetH;
+
+          let sx = 0, sy = 0, sWidth = candImg.naturalWidth, sHeight = candImg.naturalHeight;
+
+          if (imgRatio > targetRatio) {
+            sWidth = candImg.naturalHeight * targetRatio;
+            sx = (candImg.naturalWidth - sWidth) / 2;
+          } else {
+            sHeight = candImg.naturalWidth / targetRatio;
+            sy = 0; // Focus on top of photo
+          }
+
+          ctx.drawImage(candImg, sx, sy, sWidth, sHeight, 30, 75, targetW, targetH);
           ctx.restore();
         }
 
-        // Draw party icon badge on image
+        // Draw party icon badge on image without stretching
         if (candidateMatch.partyIconUrl) {
           const partyImg = new Image();
           partyImg.crossOrigin = 'anonymous';
@@ -114,14 +131,28 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
             partyImg.src = candidateMatch.partyIconUrl!;
           });
           if (partyImg.complete && partyImg.naturalWidth > 0) {
+            const cx = 132;
+            const cy = 205;
+            const radius = 20;
+
             ctx.fillStyle = '#0f172a';
             ctx.beginPath();
-            ctx.arc(130, 205, 20, 0, Math.PI * 2);
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#10b981';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.stroke();
-            ctx.drawImage(partyImg, 115, 190, 30, 30);
+
+            // Maintain party icon aspect ratio inside circle
+            const maxDim = 26;
+            const pRatio = partyImg.naturalWidth / partyImg.naturalHeight;
+            let pw = maxDim, ph = maxDim;
+            if (pRatio > 1) {
+              ph = maxDim / pRatio;
+            } else {
+              pw = maxDim * pRatio;
+            }
+            ctx.drawImage(partyImg, cx - pw / 2, cy - ph / 2, pw, ph);
           }
         }
 
