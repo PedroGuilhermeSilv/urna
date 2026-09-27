@@ -12,6 +12,9 @@ import { BoletimUrna } from './components/BoletimUrna';
 import { GoogleAd } from './components/GoogleAd';
 import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`;
+
 export const App: React.FC = () => {
   // Application State
   const [candidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
@@ -21,6 +24,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ViewTab>('SIMULATOR');
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showBU, setShowBU] = useState<boolean>(false);
+  const [isWsConnected, setIsWsConnected] = useState<boolean>(false);
 
   // Vote Records (LocalStorage)
   const [records, setRecords] = useState<VoteRecord[]>(() => {
@@ -39,6 +43,55 @@ export const App: React.FC = () => {
       console.warn('Failed to save votes:', e);
     }
   }, [records]);
+
+  // WebSocket Integration with Python FastAPI Backend (Redis Pub/Sub)
+  useEffect(() => {
+    const wsUrl = `${WS_BASE_URL}/v1/ws/results`;
+    let socket: WebSocket | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout>;
+
+    const connectWs = () => {
+      try {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+          console.log('⚡ WebSocket connected to backend Redis real-time stream!');
+          setIsWsConnected(true);
+        };
+
+        socket.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            if (payload.event === 'INITIAL_COUNT' || payload.event === 'VOTE_COUNT_UPDATED' || payload.event === 'VOTES_RESET') {
+              console.log('📡 Real-time Redis Vote Event:', payload);
+            }
+          } catch (e) {
+            console.error('Error parsing WS message:', e);
+          }
+        };
+
+        socket.onclose = () => {
+          setIsWsConnected(false);
+          reconnectTimeout = setTimeout(connectWs, 3000);
+        };
+
+        socket.onerror = () => {
+          setIsWsConnected(false);
+          socket?.close();
+        };
+      } catch (err) {
+        setIsWsConnected(false);
+        reconnectTimeout = setTimeout(connectWs, 3000);
+      }
+    };
+
+    connectWs();
+
+    return () => {
+      clearTimeout(reconnectTimeout);
+      socket?.close();
+    };
+  }, []);
 
   // Candidate Match
   const candidateMatch = candidates.find((c) => c.number === digits) || null;
@@ -101,9 +154,12 @@ export const App: React.FC = () => {
       colors: ['#00875a', '#f36b00', '#f59e0b', '#38bdf8'],
     });
 
-    // Save Vote Record
+    // Save Vote Record & Send to Python Backend Queue Schema (Redis)
     let newRecord: VoteRecord;
+    let voteTypeStr: 'WHITE' | 'VALID' | 'NULL';
+
     if (isWhiteVote) {
+      voteTypeStr = 'WHITE';
       newRecord = {
         id: Date.now().toString(),
         candidateName: 'VOTO EM BRANCO',
@@ -111,6 +167,7 @@ export const App: React.FC = () => {
         timestamp: new Date().toISOString(),
       };
     } else if (candidateMatch) {
+      voteTypeStr = 'VALID';
       newRecord = {
         id: Date.now().toString(),
         candidateNumber: candidateMatch.number,
@@ -120,6 +177,7 @@ export const App: React.FC = () => {
         timestamp: new Date().toISOString(),
       };
     } else {
+      voteTypeStr = 'NULL';
       newRecord = {
         id: Date.now().toString(),
         candidateName: 'VOTO NULO',
@@ -129,6 +187,20 @@ export const App: React.FC = () => {
     }
 
     setRecords((prev) => [...prev, newRecord]);
+
+    // Async POST to Python Backend Queue endpoint
+    fetch(`${API_BASE_URL}/v1/votes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        vote_type: voteTypeStr,
+        candidate_number: candidateMatch?.number,
+        candidate_name: candidateMatch?.name,
+        party_acronym: candidateMatch?.partyAcronym,
+      }),
+    }).catch((err) => {
+      console.warn('Backend API connection warning:', err);
+    });
 
     // Play TSE Pilili Audio Tone
     soundEngine.playPilili();
@@ -269,6 +341,9 @@ export const App: React.FC = () => {
                 onClearVotes={() => {
                   if (window.confirm('Tem certeza que deseja zerar os votos desta urna?')) {
                     setRecords([]);
+                    fetch(`${API_BASE_URL}/v1/votes`, { method: 'DELETE' }).catch((err) =>
+                      console.warn('Failed to clear votes on backend:', err)
+                    );
                   }
                 }}
               />
