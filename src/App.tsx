@@ -9,6 +9,7 @@ import { UrnaMachine } from './components/UrnaMachine';
 import { CandidateCatalog } from './components/CandidateCatalog';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { BoletimUrna } from './components/BoletimUrna';
+import { GoogleAd } from './components/GoogleAd';
 import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -256,6 +257,9 @@ export const App: React.FC = () => {
                 onCorrigeClick={handleCorrigeClick}
                 onConfirmaClick={handleConfirmaClick}
               />
+
+              {/* Google AdSense Banner */}
+              <GoogleAd className="my-4" />
 
               {/* Real-time Vote Count & Apuração Dashboard */}
               <ResultsDashboard
