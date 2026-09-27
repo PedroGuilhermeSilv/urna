@@ -9,8 +9,10 @@ import { UrnaMachine } from './components/UrnaMachine';
 import { CandidateCatalog } from './components/CandidateCatalog';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { BoletimUrna } from './components/BoletimUrna';
+import { Top3Leaders } from './components/Top3Leaders';
 import { GoogleAd } from './components/GoogleAd';
 import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Users } from 'lucide-react';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8001`;
@@ -302,7 +304,7 @@ export const App: React.FC = () => {
                       isWsConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'
                     }`}
                   />
-                  {isWsConnected ? 'Ao Vivo (Redis)' : 'Off-line'}
+                  {isWsConnected ? 'Ao Vivo' : 'Off-line'}
                 </span>
               </div>
               <div className="text-xl sm:text-3xl font-black text-white font-mono mt-0.5">
@@ -315,6 +317,20 @@ export const App: React.FC = () => {
             <span>🗳️ Digite o número do candidato na Urna para registrar seu voto</span>
           </div>
         </motion.div>
+
+        {/* Top 3 Leaders Section (Imagem, Porcentagem, Votos) */}
+        <Top3Leaders
+          candidates={candidates}
+          records={records}
+          voteResult={wsVoteResult}
+          onSelectCandidate={(num) => {
+            handleCorrigeClick();
+            soundEngine.playBeep();
+            setDigits(num);
+            if (activeTab !== 'SIMULATOR') setActiveTab('SIMULATOR');
+          }}
+        />
+
 
         {/* Candidate Quick Ribbon (Visible on Tablet/Desktop, Hidden on Mobile) */}
         <motion.div
