@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { VoteRecord, Candidate } from '../types';
+import { VoteRecord, Candidate, VoteResultData } from '../types';
 import { BarChart3, FileText, Trash2, PieChart, Users, Trophy } from 'lucide-react';
 
 interface ResultsDashboardProps {
   records: VoteRecord[];
   candidates: Candidate[];
+  voteResult?: VoteResultData | null;
   onOpenBU: () => void;
   onClearVotes: () => void;
 }
@@ -13,25 +14,37 @@ interface ResultsDashboardProps {
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   records,
   candidates,
+  voteResult,
   onOpenBU,
   onClearVotes,
 }) => {
-  const totalVotes = records.length;
-
   const counts: Record<string, number> = {};
   candidates.forEach((c) => (counts[c.number] = 0));
+
+  let totalVotes = 0;
   let whiteVotes = 0;
   let nullVotes = 0;
 
-  records.forEach((rec) => {
-    if (rec.voteType === 'WHITE') {
-      whiteVotes++;
-    } else if (rec.voteType === 'NULL') {
-      nullVotes++;
-    } else if (rec.candidateNumber && counts[rec.candidateNumber] !== undefined) {
-      counts[rec.candidateNumber]++;
-    }
-  });
+  if (voteResult) {
+    totalVotes = voteResult.total_votes;
+    whiteVotes = voteResult.white_votes;
+    nullVotes = voteResult.null_votes;
+    candidates.forEach((c) => {
+      counts[c.number] = voteResult.candidate_counts[c.number] || 0;
+    });
+  } else {
+    totalVotes = records.length;
+    records.forEach((rec) => {
+      if (rec.voteType === 'WHITE') {
+        whiteVotes++;
+      } else if (rec.voteType === 'NULL') {
+        nullVotes++;
+      } else if (rec.candidateNumber && counts[rec.candidateNumber] !== undefined) {
+        counts[rec.candidateNumber]++;
+      }
+    });
+  }
+
 
   const sortedCandidates = [...candidates].sort((a, b) => (counts[b.number] || 0) - (counts[a.number] || 0));
   const leadingCandidate = totalVotes > 0 && counts[sortedCandidates[0].number] > 0 ? sortedCandidates[0] : null;

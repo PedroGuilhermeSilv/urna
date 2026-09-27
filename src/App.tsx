@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Candidate, ViewTab, VoteRecord, VotingStage } from './types';
+import { Candidate, ViewTab, VoteRecord, VotingStage, VoteResultData } from './types';
 import { INITIAL_CANDIDATES } from './data/candidates';
 import { soundEngine } from './utils/sound';
 import { HeaderNavbar } from './components/HeaderNavbar';
@@ -10,10 +10,10 @@ import { CandidateCatalog } from './components/CandidateCatalog';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { BoletimUrna } from './components/BoletimUrna';
 import { GoogleAd } from './components/GoogleAd';
-import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Users } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8001`;
 
 export const App: React.FC = () => {
   // Application State
@@ -25,6 +25,7 @@ export const App: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showBU, setShowBU] = useState<boolean>(false);
   const [isWsConnected, setIsWsConnected] = useState<boolean>(false);
+  const [wsVoteResult, setWsVoteResult] = useState<VoteResultData | null>(null);
 
   // Vote Records (LocalStorage)
   const [records, setRecords] = useState<VoteRecord[]>(() => {
@@ -44,6 +45,22 @@ export const App: React.FC = () => {
     }
   }, [records]);
 
+  // Initial HTTP Fetch of vote counts from Redis backend
+  useEffect(() => {
+    const fetchInitialResults = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/v1/votes/results`);
+        if (res.ok) {
+          const data: VoteResultData = await res.json();
+          setWsVoteResult(data);
+        }
+      } catch (err) {
+        console.warn('Initial GET /v1/votes/results fetch warning:', err);
+      }
+    };
+    fetchInitialResults();
+  }, []);
+
   // WebSocket Integration with Python FastAPI Backend (Redis Pub/Sub)
   useEffect(() => {
     const wsUrl = `${WS_BASE_URL}/v1/ws/results`;
@@ -62,8 +79,15 @@ export const App: React.FC = () => {
         socket.onmessage = (event) => {
           try {
             const payload = JSON.parse(event.data);
-            if (payload.event === 'INITIAL_COUNT' || payload.event === 'VOTE_COUNT_UPDATED' || payload.event === 'VOTES_RESET') {
+            if (
+              payload.event === 'INITIAL_COUNT' ||
+              payload.event === 'VOTE_COUNT_UPDATED' ||
+              payload.event === 'VOTES_RESET'
+            ) {
               console.log('📡 Real-time Redis Vote Event:', payload);
+              if (payload.data) {
+                setWsVoteResult(payload.data);
+              }
             }
           } catch (e) {
             console.error('Error parsing WS message:', e);
@@ -235,6 +259,8 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleConfirmaClick, handleCorrigeClick, handleNumberClick, handleWhiteClick]);
 
+  const totalVotesCount = wsVoteResult?.total_votes ?? records.length;
+
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
       {/* Header Navbar */}
@@ -243,12 +269,53 @@ export const App: React.FC = () => {
         setActiveTab={setActiveTab}
         isMuted={isMuted}
         onToggleMute={toggleMute}
-        totalVotesCount={records.length}
+        totalVotesCount={totalVotesCount}
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 md:p-6 space-y-4 sm:space-y-6">
         
+        {/* Top Overview Banner: Contagem Geral */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 rounded-2xl p-3.5 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 sm:p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                  Contagem Geral de Votos
+                </span>
+                <span
+                  className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 ${
+                    isWsConnected
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isWsConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'
+                    }`}
+                  />
+                  {isWsConnected ? 'Ao Vivo (Redis)' : 'Off-line'}
+                </span>
+              </div>
+              <div className="text-xl sm:text-3xl font-black text-white font-mono mt-0.5">
+                {totalVotesCount} <span className="text-xs sm:text-sm font-sans text-slate-400 font-semibold">votos computados</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 text-xs font-medium text-slate-300 bg-slate-950/60 px-3.5 py-2 rounded-xl border border-slate-800">
+            <span>🗳️ Digite o número do candidato na Urna para registrar seu voto</span>
+          </div>
+        </motion.div>
+
         {/* Candidate Quick Ribbon (Visible on Tablet/Desktop, Hidden on Mobile) */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -315,7 +382,7 @@ export const App: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.25 }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8"
             >
               {/* Electronic Voting Machine */}
               <UrnaMachine
@@ -337,10 +404,17 @@ export const App: React.FC = () => {
               <ResultsDashboard
                 records={records}
                 candidates={candidates}
+                voteResult={wsVoteResult}
                 onOpenBU={() => setShowBU(true)}
                 onClearVotes={() => {
                   if (window.confirm('Tem certeza que deseja zerar os votos desta urna?')) {
                     setRecords([]);
+                    setWsVoteResult({
+                      total_votes: 0,
+                      candidate_counts: {},
+                      white_votes: 0,
+                      null_votes: 0,
+                    });
                     fetch(`${API_BASE_URL}/v1/votes`, { method: 'DELETE' }).catch((err) =>
                       console.warn('Failed to clear votes on backend:', err)
                     );
@@ -380,10 +454,20 @@ export const App: React.FC = () => {
               <ResultsDashboard
                 records={records}
                 candidates={candidates}
+                voteResult={wsVoteResult}
                 onOpenBU={() => setShowBU(true)}
                 onClearVotes={() => {
                   if (window.confirm('Tem certeza que deseja zerar os votos desta urna?')) {
                     setRecords([]);
+                    setWsVoteResult({
+                      total_votes: 0,
+                      candidate_counts: {},
+                      white_votes: 0,
+                      null_votes: 0,
+                    });
+                    fetch(`${API_BASE_URL}/v1/votes`, { method: 'DELETE' }).catch((err) =>
+                      console.warn('Failed to clear votes on backend:', err)
+                    );
                   }
                 }}
               />
@@ -398,6 +482,7 @@ export const App: React.FC = () => {
         <BoletimUrna
           records={records}
           candidates={candidates}
+          voteResult={wsVoteResult}
           onClose={() => setShowBU(false)}
         />
       )}
@@ -417,3 +502,4 @@ export const App: React.FC = () => {
     </div>
   );
 };
+

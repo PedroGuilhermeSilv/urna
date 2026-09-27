@@ -1,14 +1,15 @@
 import React from 'react';
-import { VoteRecord, Candidate } from '../types';
-import { Printer, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { VoteRecord, Candidate, VoteResultData } from '../types';
+import { Printer, ShieldCheck, X } from 'lucide-react';
 
 interface BoletimUrnaProps {
   records: VoteRecord[];
   candidates: Candidate[];
+  voteResult?: VoteResultData | null;
   onClose: () => void;
 }
 
-export const BoletimUrna: React.FC<BoletimUrnaProps> = ({ records, candidates, onClose }) => {
+export const BoletimUrna: React.FC<BoletimUrnaProps> = ({ records, candidates, voteResult, onClose }) => {
   const now = new Date().toLocaleString('pt-BR');
 
   // Count votes
@@ -16,18 +17,28 @@ export const BoletimUrna: React.FC<BoletimUrnaProps> = ({ records, candidates, o
   candidates.forEach((c) => (candidateCounts[c.number] = 0));
   let whiteVotes = 0;
   let nullVotes = 0;
+  let totalVotes = 0;
 
-  records.forEach((rec) => {
-    if (rec.voteType === 'WHITE') {
-      whiteVotes++;
-    } else if (rec.voteType === 'NULL') {
-      nullVotes++;
-    } else if (rec.candidateNumber && candidateCounts[rec.candidateNumber] !== undefined) {
-      candidateCounts[rec.candidateNumber]++;
-    }
-  });
+  if (voteResult) {
+    totalVotes = voteResult.total_votes;
+    whiteVotes = voteResult.white_votes;
+    nullVotes = voteResult.null_votes;
+    candidates.forEach((c) => {
+      candidateCounts[c.number] = voteResult.candidate_counts[c.number] || 0;
+    });
+  } else {
+    totalVotes = records.length;
+    records.forEach((rec) => {
+      if (rec.voteType === 'WHITE') {
+        whiteVotes++;
+      } else if (rec.voteType === 'NULL') {
+        nullVotes++;
+      } else if (rec.candidateNumber && candidateCounts[rec.candidateNumber] !== undefined) {
+        candidateCounts[rec.candidateNumber]++;
+      }
+    });
+  }
 
-  const totalVotes = records.length;
 
   const handlePrint = () => {
     window.print();

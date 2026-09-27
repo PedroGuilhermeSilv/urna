@@ -23,3 +23,12 @@ export interface VoteRecord {
 export type ViewTab = 'SIMULATOR' | 'CANDIDATES' | 'RESULTS';
 
 export type VotingStage = 'INPUT' | 'CONFIRM_PROMPT' | 'RECORDING' | 'ENDED';
+
+export interface VoteResultData {
+  total_votes: number;
+  candidate_counts: Record<string, number>;
+  white_votes: number;
+  null_votes: number;
+  updated_at?: string;
+}
+
