@@ -26,9 +26,9 @@ export const UrnaScreen: React.FC<UrnaScreenProps> = ({
         <div className="w-full text-right text-xs font-bold tracking-widest text-slate-600 uppercase border-b border-slate-400/60 pb-1.5 flex items-center justify-between">
           <span className="flex items-center gap-1.5 text-emerald-700 font-extrabold text-[10px]">
             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping inline-block" />
-            SISTEMA OPERACIONAL TSE
+            SIMULADOR INTERATIVO
           </span>
-          <span>Justiça Eleitoral</span>
+          <span>SIMULADOR ELEITORAL</span>
         </div>
 
         {/* Big Animated FIM Text */}

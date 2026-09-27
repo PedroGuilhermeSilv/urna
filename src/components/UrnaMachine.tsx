@@ -52,13 +52,13 @@ export const UrnaMachine: React.FC<UrnaMachineProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-black tracking-wider text-slate-100 uppercase">
-                  Terminal de Votação Urna Eletrônica
+                  Terminal de Votação (Simulador)
                 </h2>
-                <span className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">
-                  MODELO UE2026
+                <span className="text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">
+                  NÃO OFICIAL
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-mono">SEÇÃO 0042 • ZONA 001 • TRE</p>
+              <p className="text-[11px] text-slate-400 font-mono">SIMULAÇÃO INTERATIVA DE URNA ELETRÔNICA</p>
             </div>
           </div>
 

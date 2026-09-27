@@ -1,10 +1,9 @@
-// TSE Urna Sound Engine - Clean single-bip trimming & end tone player
+// TSE Urna Sound Engine - Plays user audio files from /sons/bip.m4a and /sons/encerrou.m4a
 
 class SoundEngine {
   private isMuted: boolean = false;
   private currentBip: HTMLAudioElement | null = null;
   private currentPilili: HTMLAudioElement | null = null;
-  private bipTimeout: ReturnType<typeof setTimeout> | null = null;
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
@@ -15,35 +14,23 @@ class SoundEngine {
   }
 
   /**
-   * Play crisp 100ms single keypress bip from /sons/bip.m4a
+   * Play keypress bip sound (/sons/bip.m4a)
    */
   public playBeep() {
     if (this.isMuted) return;
     try {
-      // Clear previous bip timeout & audio
-      if (this.bipTimeout) clearTimeout(this.bipTimeout);
       if (this.currentBip) {
         this.currentBip.pause();
-        this.currentBip = null;
+        this.currentBip.currentTime = 0;
       }
-
       const audio = new Audio('/sons/bip.m4a');
       this.currentBip = audio;
-      audio.volume = 0.8;
-      audio.currentTime = 0;
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
+      audio.volume = 0.85;
+      audio.play().catch((err) => {
+        if (err.name !== 'AbortError') {
           this.playSynthBeep();
-        });
-      }
-
-      // Cut off bip after 120ms so it only plays 1 single key click
-      this.bipTimeout = setTimeout(() => {
-        audio.pause();
-        audio.currentTime = 0;
-      }, 120);
+        }
+      });
     } catch {
       this.playSynthBeep();
     }
@@ -83,24 +70,21 @@ class SoundEngine {
   public playPilili() {
     if (this.isMuted) return;
     try {
-      // Stop any keypress bip audio
-      if (this.bipTimeout) clearTimeout(this.bipTimeout);
       if (this.currentBip) {
         this.currentBip.pause();
-        this.currentBip = null;
       }
-
       if (this.currentPilili) {
         this.currentPilili.pause();
-        this.currentPilili = null;
+        this.currentPilili.currentTime = 0;
       }
 
       const audio = new Audio('/sons/encerrou.m4a');
       this.currentPilili = audio;
       audio.volume = 1.0;
-      audio.currentTime = 0;
-      audio.play().catch(() => {
-        this.playSynthPilili();
+      audio.play().catch((err) => {
+        if (err.name !== 'AbortError') {
+          this.playSynthPilili();
+        }
       });
     } catch {
       this.playSynthPilili();

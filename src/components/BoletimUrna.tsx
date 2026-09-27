@@ -41,7 +41,7 @@ export const BoletimUrna: React.FC<BoletimUrnaProps> = ({ records, candidates, o
         <div className="flex items-center justify-between border-b border-slate-300 pb-3 mb-4 print:hidden">
           <div className="flex items-center gap-2 text-slate-700">
             <ShieldCheck className="w-5 h-5 text-emerald-700" />
-            <span className="font-bold text-sm uppercase">Boletim de Urna Oficial</span>
+            <span className="font-bold text-sm uppercase">Boletim de Urna (Simulação)</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -65,16 +65,16 @@ export const BoletimUrna: React.FC<BoletimUrnaProps> = ({ records, candidates, o
         {/* Printable Ticket Content */}
         <div className="text-center space-y-2 border-b-2 border-dashed border-slate-400 pb-4">
           <div className="text-sm font-extrabold tracking-widest uppercase">
-            JUSTIÇA ELEITORAL
+            SIMULADOR DE URNA ELETRÔNICA
           </div>
-          <div className="text-xs font-bold text-slate-700 uppercase">
-            BOLETIM DE URNA (BU)
+          <div className="text-xs font-bold text-amber-800 uppercase">
+            BOLETIM DE URNA (SEM VALOR OFICIAL)
           </div>
           <div className="text-[11px] text-slate-600">
             ELEIÇÕES SIMULADAS 2026 - PRESIDENTE
           </div>
           <div className="text-[10px] text-slate-500">
-            MUNICÍPIO: 99999 • ZONA: 001 • SEÇÃO: 0042
+            MUNICÍPIO: SIMULAÇÃO • ZONA: 000 • SEÇÃO: 0000
           </div>
           <div className="text-[10px] text-slate-500">
             DATA DA EMISSÃO: {now}

@@ -45,13 +45,13 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base md:text-lg font-black text-white tracking-tight">
-                Urna Eletrônica
+                Simulador de Urna Eletrônica
               </h1>
-              <span className="text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                TSE 2026
+              <span className="text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                NÃO OFICIAL
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium">Simulador Oficial da Justiça Eleitoral</p>
+            <p className="text-xs text-slate-400 font-medium">Simulação demonstrativa (Sem vínculo com a Justiça Eleitoral)</p>
           </div>
         </div>
 

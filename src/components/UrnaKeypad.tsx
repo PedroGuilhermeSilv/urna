@@ -25,11 +25,11 @@ export const UrnaKeypad: React.FC<UrnaKeypadProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-3.5 h-3.5 rounded-full bg-yellow-400 shadow-sm shadow-yellow-500/50" />
           <span className="font-extrabold text-xs md:text-sm tracking-wider text-slate-200 uppercase font-sans">
-            Justiça Eleitoral
+            SIMULADOR DE URNA
           </span>
         </div>
         <span className="text-[10px] text-slate-400 font-mono tracking-widest bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-          UE2026
+          NÃO OFICIAL
         </span>
       </div>
 
