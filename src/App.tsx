@@ -335,19 +335,6 @@ export const App: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Top 3 Leaders Section (Imagem, Porcentagem, Votos) */}
-        <Top3Leaders
-          candidates={candidates}
-          records={records}
-          voteResult={wsVoteResult}
-          onSelectCandidate={(num) => {
-            handleCorrigeClick();
-            soundEngine.playBeep();
-            setDigits(num);
-            if (activeTab !== 'SIMULATOR') setActiveTab('SIMULATOR');
-          }}
-        />
-
         {/* Candidate Quick Ribbon (Visible on Tablet/Desktop, Hidden on Mobile) */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -441,7 +428,21 @@ export const App: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
+              className="space-y-6"
             >
+              {/* Top 3 Leaders Section inside Candidatos Tab */}
+              <Top3Leaders
+                candidates={candidates}
+                records={records}
+                voteResult={wsVoteResult}
+                onSelectCandidate={(num) => {
+                  handleCorrigeClick();
+                  soundEngine.playBeep();
+                  setDigits(num);
+                  setActiveTab('SIMULATOR');
+                }}
+              />
+
               <CandidateCatalog
                 candidates={candidates}
                 onSelectCandidate={(num) => {
@@ -452,6 +453,7 @@ export const App: React.FC = () => {
               />
             </motion.div>
           )}
+
 
           {activeTab === 'RESULTS' && (
             <motion.div
