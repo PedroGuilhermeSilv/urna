@@ -34,6 +34,14 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
     ? ((candidateCount / totalVotes) * 100).toFixed(1)
     : null;
 
+  // Party Emblem Emoji & Full Icon Link
+  let partyEmoji = '🔰';
+  if (candidateMatch?.partyAcronym === 'PT') partyEmoji = '🚩';
+  else if (candidateMatch?.partyAcronym === 'PL') partyEmoji = '🦅';
+  else if (candidateMatch?.partyAcronym === 'NOVO') partyEmoji = '🔶';
+  else if (candidateMatch?.partyAcronym === 'PSD') partyEmoji = '🔷';
+  else if (candidateMatch?.partyAcronym === 'MISSÃO') partyEmoji = '⭐';
+
   // Dynamic share text
   let shareMessage = `🗳️ Participe da Pesquisa Eleitoral 2026 (Não Oficial) e acompanhe a apuração ao vivo! Vote aqui: ${siteUrl}`;
 
@@ -42,7 +50,7 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
   } else if (lastVote?.voteType === 'NULL') {
     shareMessage = `🗳️ Acabei de registrar meu voto NULO na Pesquisa Eleitoral 2026! 🚀 Deixe seu voto ao vivo aqui: ${siteUrl}`;
   } else if (candidateMatch) {
-    shareMessage = `🗳️ Acabei de votar no candidato ${candidateMatch.name} (${candidateMatch.number} - ${candidateMatch.partyAcronym}) na Pesquisa Eleitoral 2026! 🚀 Quem vence essa eleição? Deixe seu voto ao vivo aqui: ${siteUrl}`;
+    shareMessage = `🗳️ ${partyEmoji} Acabei de votar no candidato ${candidateMatch.name} (Nº ${candidateMatch.number} - Partido ${candidateMatch.partyAcronym}) na Pesquisa Eleitoral 2026! 🚀\n\nÉ o voto do time ${candidateMatch.partyAcronym}! Deixe seu voto ao vivo aqui: ${siteUrl}`;
   }
 
   const handleCopyLink = () => {
@@ -51,7 +59,117 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
     setTimeout(() => setCopied(false), 2500);
   };
 
+  // Generate Image Card with Candidate Photo & Party Icon for Native Sharing
+  const generateShareCardFile = async (): Promise<File | null> => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 320;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return null;
+
+      // Background gradient
+      const grad = ctx.createLinearGradient(0, 0, 600, 320);
+      grad.addColorStop(0, '#0f172a');
+      grad.addColorStop(0.5, '#0b0f19');
+      grad.addColorStop(1, '#064e3b');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 600, 320);
+
+      // Metallic border
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(12, 12, 576, 296);
+
+      // Title header
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText('🗳️ PESQUISA ELEITORAL 2026 (NÃO OFICIAL)', 30, 48);
+
+      if (candidateMatch) {
+        // Draw candidate photo
+        const candImg = new Image();
+        candImg.crossOrigin = 'anonymous';
+        await new Promise((res) => {
+          candImg.onload = res;
+          candImg.onerror = res;
+          candImg.src = candidateMatch.photoUrl;
+        });
+        if (candImg.complete && candImg.naturalWidth > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(30, 75, 110, 140, 12);
+          ctx.clip();
+          ctx.drawImage(candImg, 30, 75, 110, 140);
+          ctx.restore();
+        }
+
+        // Draw party icon badge on image
+        if (candidateMatch.partyIconUrl) {
+          const partyImg = new Image();
+          partyImg.crossOrigin = 'anonymous';
+          await new Promise((res) => {
+            partyImg.onload = res;
+            partyImg.onerror = res;
+            partyImg.src = candidateMatch.partyIconUrl!;
+          });
+          if (partyImg.complete && partyImg.naturalWidth > 0) {
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(130, 205, 20, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.drawImage(partyImg, 115, 190, 30, 30);
+          }
+        }
+
+        // Candidate Details
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText(candidateMatch.name, 160, 105);
+
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 18px monospace';
+        ctx.fillText(`Nº ${candidateMatch.number} - Partido: ${candidateMatch.partyAcronym}`, 160, 140);
+
+        if (percentage) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 20px monospace';
+          ctx.fillText(`📊 ${percentage}% dos votos ao vivo (${candidateCount} votos)`, 160, 180);
+        }
+      }
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`Acesse e vote você também: ${siteUrl}`, 30, 285);
+
+      const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
+      if (!blob) return null;
+      return new File([blob], 'meu-voto-pesquisa-2026.png', { type: 'image/png' });
+    } catch (err) {
+      console.warn('Share image card error:', err);
+      return null;
+    }
+  };
+
   const handleNativeShare = async () => {
+    // Try file share first
+    const shareFile = await generateShareCardFile();
+    if (shareFile && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+      try {
+        await navigator.share({
+          title: 'Pesquisa Eleitoral 2026',
+          text: shareMessage,
+          files: [shareFile],
+        });
+        return;
+      } catch (err) {
+        console.log('File share dismissed, fallback to link:', err);
+      }
+    }
+
     if (navigator.share) {
       try {
         await navigator.share({

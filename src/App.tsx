@@ -401,8 +401,21 @@ export const App: React.FC = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.25 }}
-              className="space-y-6 sm:space-y-8"
+              className="space-y-4 sm:space-y-6"
             >
+              {/* Top 3 Leaders Section (Embaixo da Contagem Geral) */}
+              <Top3Leaders
+                candidates={candidates}
+                records={records}
+                voteResult={wsVoteResult}
+                onSelectCandidate={(num) => {
+                  handleCorrigeClick();
+                  soundEngine.playBeep();
+                  setDigits(num);
+                  setActiveTab('SIMULATOR');
+                }}
+              />
+
               {/* Electronic Voting Machine */}
               <UrnaMachine
                 stage={stage}
@@ -414,19 +427,6 @@ export const App: React.FC = () => {
                 onWhiteClick={handleWhiteClick}
                 onCorrigeClick={handleCorrigeClick}
                 onConfirmaClick={handleConfirmaClick}
-              />
-
-              {/* Top 3 Leaders Section */}
-              <Top3Leaders
-                candidates={candidates}
-                records={records}
-                voteResult={wsVoteResult}
-                onSelectCandidate={(num) => {
-                  handleCorrigeClick();
-                  soundEngine.playBeep();
-                  setDigits(num);
-                  setActiveTab('SIMULATOR');
-                }}
               />
 
               {/* Google AdSense Banner */}
