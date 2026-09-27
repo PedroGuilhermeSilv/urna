@@ -28,9 +28,10 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
 }) => {
   const tabs: TabItem[] = [
     { id: 'SIMULATOR', label: 'Urna Eletrônica', shortLabel: 'Urna', icon: Vote },
-    { id: 'CANDIDATES', label: 'Candidatos', shortLabel: 'Fotos', icon: Users },
+    { id: 'CANDIDATES', label: 'Candidatos', shortLabel: 'Candidatos', icon: Users },
     { id: 'RESULTS', label: 'Apuração', shortLabel: 'Placar', icon: BarChart2, badge: totalVotesCount },
   ];
+
 
   return (
     <header className="bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-0 z-40 shadow-xl">
@@ -46,8 +47,9 @@ export const HeaderNavbar: React.FC<HeaderNavbarProps> = ({
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight">
-                Simulador de Urna
+                Pesquisa Eleitoral
               </h1>
+
               <span className="text-[9px] sm:text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1.5 py-0.2 rounded-full">
                 NÃO OFICIAL
               </span>

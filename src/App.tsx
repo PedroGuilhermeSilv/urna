@@ -10,9 +10,9 @@ import { CandidateCatalog } from './components/CandidateCatalog';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { BoletimUrna } from './components/BoletimUrna';
 import { Top3Leaders } from './components/Top3Leaders';
+import { ShareVoteModal } from './components/ShareVoteModal';
 import { GoogleAd } from './components/GoogleAd';
-import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Users } from 'lucide-react';
-
+import { Sparkles, ArrowRight, ShieldCheck, CheckCircle2, Users, Share2 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 const WS_BASE_URL = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8001`;
@@ -26,8 +26,11 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ViewTab>('SIMULATOR');
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showBU, setShowBU] = useState<boolean>(false);
+  const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [lastVote, setLastVote] = useState<VoteRecord | null>(null);
   const [isWsConnected, setIsWsConnected] = useState<boolean>(false);
   const [wsVoteResult, setWsVoteResult] = useState<VoteResultData | null>(null);
+
 
   // Vote Records (LocalStorage)
   const [records, setRecords] = useState<VoteRecord[]>(() => {
@@ -213,6 +216,8 @@ export const App: React.FC = () => {
     }
 
     setRecords((prev) => [...prev, newRecord]);
+    setLastVote(newRecord);
+
 
     // Async POST to Python Backend Queue endpoint
     fetch(`${API_BASE_URL}/v1/votes`, {
@@ -231,7 +236,12 @@ export const App: React.FC = () => {
     // Play TSE Pilili Audio Tone
     soundEngine.playPilili();
 
-    // Auto Reset Machine for next voter after 3 seconds
+    // Open Share Modal after confirmation tone
+    setTimeout(() => {
+      setShowShareModal(true);
+    }, 1500);
+
+    // Auto Reset Machine for next voter after 3.2 seconds
     setTimeout(() => {
       setDigits('');
       setIsWhiteVote(false);
@@ -313,8 +323,15 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-xs font-medium text-slate-300 bg-slate-950/60 px-3.5 py-2 rounded-xl border border-slate-800">
-            <span>🗳️ Digite o número do candidato na Urna para registrar seu voto</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-extrabold transition-all shadow-md shrink-0"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Compartilhar Voto</span>
+            </button>
           </div>
         </motion.div>
 
@@ -330,7 +347,6 @@ export const App: React.FC = () => {
             if (activeTab !== 'SIMULATOR') setActiveTab('SIMULATOR');
           }}
         />
-
 
         {/* Candidate Quick Ribbon (Visible on Tablet/Desktop, Hidden on Mobile) */}
         <motion.div
@@ -384,7 +400,7 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('CANDIDATES')}
             className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 shrink-0 group"
           >
-            <span>Ver fotos</span>
+            <span>Ver candidatos</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>
@@ -415,28 +431,6 @@ export const App: React.FC = () => {
 
               {/* Google AdSense Banner */}
               <GoogleAd className="my-4" />
-
-              {/* Real-time Vote Count & Apuração Dashboard */}
-              <ResultsDashboard
-                records={records}
-                candidates={candidates}
-                voteResult={wsVoteResult}
-                onOpenBU={() => setShowBU(true)}
-                onClearVotes={() => {
-                  if (window.confirm('Tem certeza que deseja zerar os votos desta urna?')) {
-                    setRecords([]);
-                    setWsVoteResult({
-                      total_votes: 0,
-                      candidate_counts: {},
-                      white_votes: 0,
-                      null_votes: 0,
-                    });
-                    fetch(`${API_BASE_URL}/v1/votes`, { method: 'DELETE' }).catch((err) =>
-                      console.warn('Failed to clear votes on backend:', err)
-                    );
-                  }
-                }}
-              />
             </motion.div>
           )}
 
@@ -472,20 +466,6 @@ export const App: React.FC = () => {
                 candidates={candidates}
                 voteResult={wsVoteResult}
                 onOpenBU={() => setShowBU(true)}
-                onClearVotes={() => {
-                  if (window.confirm('Tem certeza que deseja zerar os votos desta urna?')) {
-                    setRecords([]);
-                    setWsVoteResult({
-                      total_votes: 0,
-                      candidate_counts: {},
-                      white_votes: 0,
-                      null_votes: 0,
-                    });
-                    fetch(`${API_BASE_URL}/v1/votes`, { method: 'DELETE' }).catch((err) =>
-                      console.warn('Failed to clear votes on backend:', err)
-                    );
-                  }
-                }}
               />
             </motion.div>
           )}
@@ -503,13 +483,22 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Share Vote Modal */}
+      {showShareModal && (
+        <ShareVoteModal
+          lastVote={lastVote}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-4 mt-12 bg-slate-950/50 text-slate-400 text-xs text-center">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span className="flex items-center gap-1.5 text-slate-300 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            Simulador de Urna Eletrônica
+            Pesquisa Eleitoral (Não Oficial)
           </span>
+
           <span className="text-slate-500">
             Este site é apenas uma simulação interativa sem vínculo com a Justiça Eleitoral e não representa a realidade.
           </span>
@@ -518,4 +507,5 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
 

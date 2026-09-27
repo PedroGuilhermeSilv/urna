@@ -8,7 +8,7 @@ interface ResultsDashboardProps {
   candidates: Candidate[];
   voteResult?: VoteResultData | null;
   onOpenBU: () => void;
-  onClearVotes: () => void;
+  onClearVotes?: () => void;
 }
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
@@ -16,7 +16,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   candidates,
   voteResult,
   onOpenBU,
-  onClearVotes,
 }) => {
   const counts: Record<string, number> = {};
   candidates.forEach((c) => (counts[c.number] = 0));
@@ -44,7 +43,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       }
     });
   }
-
 
   const sortedCandidates = [...candidates].sort((a, b) => (counts[b.number] || 0) - (counts[a.number] || 0));
   const leadingCandidate = totalVotes > 0 && counts[sortedCandidates[0].number] > 0 ? sortedCandidates[0] : null;
@@ -81,20 +79,9 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <FileText className="w-4 h-4" />
             <span>Boletim de Urna</span>
           </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.96 }}
-            type="button"
-            onClick={onClearVotes}
-            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-800/40 rounded-xl text-xs font-semibold transition-all"
-            title="Zerar Urna"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Zerar</span>
-          </motion.button>
         </div>
       </div>
+
 
       {/* Overview Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
