@@ -8,6 +8,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     partyAcronym: 'PT',
     viceName: 'GERALDO ALCKMIN',
     photoUrl: '/fotos/lula.png',
+    partyIconUrl: '/fotos/icons/pt.svg',
     coalition: 'FE BRASIL (PT/PCdoB/PV) / PSB / PSOL / REDE',
   },
   {
@@ -17,6 +18,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     partyAcronym: 'PL',
     viceName: 'BRAGA NETTO',
     photoUrl: '/fotos/flavio.png',
+    partyIconUrl: '/fotos/icons/pl.svg',
     coalition: 'PL / PP / REPUBLICANOS',
   },
   {
@@ -26,6 +28,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     partyAcronym: 'NOVO',
     viceName: 'DIOGO DA LUZ',
     photoUrl: '/fotos/cury.png',
+    partyIconUrl: '/fotos/icons/pn.svg',
     coalition: 'NOVO / PODE',
   },
   {
@@ -35,6 +38,7 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     partyAcronym: 'PSD',
     viceName: 'GRACINHA CAIADO',
     photoUrl: '/fotos/caiado.png',
+    partyIconUrl: '/fotos/icons/psd.svg',
     coalition: 'UNIÃO BRASIL / PSD / MDB',
   },
   {
@@ -44,6 +48,8 @@ export const INITIAL_CANDIDATES: Candidate[] = [
     partyAcronym: 'MISSÃO',
     viceName: 'KIM KATAGUIRI',
     photoUrl: '/fotos/renan.png',
+    partyIconUrl: '/fotos/icons/missao.svg',
     coalition: 'MISSÃO BRASIL',
   },
 ];
+

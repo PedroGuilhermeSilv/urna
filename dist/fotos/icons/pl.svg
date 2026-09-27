@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#1e3a8a"/>
+  <path d="M 0 80 Q 64 60 128 90 L 128 128 L 0 128 Z" fill="#eab308" opacity="0.9"/>
+  <path d="M 0 95 Q 64 80 128 105 L 128 128 L 0 128 Z" fill="#16a34a" opacity="0.9"/>
+  <text x="64" y="62" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="44" fill="#ffffff" text-anchor="middle">PL</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#ea580c"/>
+  <text x="64" y="60" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="30" fill="#ffffff" text-anchor="middle">NOVO</text>
+  <rect x="24" y="78" width="80" height="6" rx="3" fill="#ffffff"/>
+  <text x="64" y="106" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="20" fill="#fed7aa" text-anchor="middle">30</text>
+</svg>

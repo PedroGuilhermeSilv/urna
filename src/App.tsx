@@ -416,6 +416,19 @@ export const App: React.FC = () => {
                 onConfirmaClick={handleConfirmaClick}
               />
 
+              {/* Top 3 Leaders Section */}
+              <Top3Leaders
+                candidates={candidates}
+                records={records}
+                voteResult={wsVoteResult}
+                onSelectCandidate={(num) => {
+                  handleCorrigeClick();
+                  soundEngine.playBeep();
+                  setDigits(num);
+                  setActiveTab('SIMULATOR');
+                }}
+              />
+
               {/* Google AdSense Banner */}
               <GoogleAd className="my-4" />
             </motion.div>
@@ -430,19 +443,6 @@ export const App: React.FC = () => {
               transition={{ duration: 0.25 }}
               className="space-y-6"
             >
-              {/* Top 3 Leaders Section inside Candidatos Tab */}
-              <Top3Leaders
-                candidates={candidates}
-                records={records}
-                voteResult={wsVoteResult}
-                onSelectCandidate={(num) => {
-                  handleCorrigeClick();
-                  soundEngine.playBeep();
-                  setDigits(num);
-                  setActiveTab('SIMULATOR');
-                }}
-              />
-
               <CandidateCatalog
                 candidates={candidates}
                 onSelectCandidate={(num) => {

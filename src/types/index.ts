@@ -7,7 +7,9 @@ export interface Candidate {
   photoUrl: string;
   vicePhotoUrl?: string;
   coalition?: string;
+  partyIconUrl?: string;
 }
+
 
 export type VoteType = 'VALID' | 'WHITE' | 'NULL';
 

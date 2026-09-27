@@ -137,28 +137,53 @@ export const ShareVoteModal: React.FC<ShareVoteModalProps> = ({
 
               {candidateMatch ? (
                 <div className="flex items-center gap-3.5">
-                  {/* Candidate Avatar Photo */}
-                  <div className="w-16 h-20 rounded-xl bg-slate-950 border-2 border-emerald-500/50 overflow-hidden shadow-lg shrink-0">
-                    <img
-                      src={candidateMatch.photoUrl}
-                      alt={candidateMatch.name}
-                      className="w-full h-full object-cover object-top"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          candidateMatch.name
-                        )}&background=00875a&color=fff&size=128`;
-                      }}
-                    />
+                  {/* Candidate Avatar Photo with Party Icon Badge */}
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-20 rounded-xl bg-slate-950 border-2 border-emerald-500/50 overflow-hidden shadow-lg">
+                      <img
+                        src={candidateMatch.photoUrl}
+                        alt={candidateMatch.name}
+                        className="w-full h-full object-cover object-top"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            candidateMatch.name
+                          )}&background=00875a&color=fff&size=128`;
+                        }}
+                      />
+                    </div>
+
+                    {candidateMatch.partyIconUrl && (
+                      <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-lg bg-slate-900 border-2 border-emerald-500 p-0.5 shadow-md flex items-center justify-center">
+                        <img
+                          src={candidateMatch.partyIconUrl}
+                          alt={candidateMatch.partyAcronym}
+                          className="w-full h-full object-contain rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Candidate Vote Details */}
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono font-black text-xs text-slate-950 bg-emerald-400 px-2 py-0.5 rounded shadow">
                         Nº {candidateMatch.number}
                       </span>
-                      <span className="text-xs font-extrabold text-slate-300">
-                        {candidateMatch.partyAcronym}
+                      <span className="text-xs font-extrabold text-slate-200 flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-0.5 rounded-lg border border-slate-700">
+                        {candidateMatch.partyIconUrl && (
+                          <img
+                            src={candidateMatch.partyIconUrl}
+                            alt={candidateMatch.partyAcronym}
+                            className="w-4 h-4 object-contain rounded-sm"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <span>{candidateMatch.partyAcronym}</span>
                       </span>
                     </div>
 
